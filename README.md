@@ -1,2 +1,2 @@
 # shell-script
-Shell scripts like onboadring new servers based on Debian and Fedra
+Shell scripts like onboadring new servers based on Debian and Fedora
