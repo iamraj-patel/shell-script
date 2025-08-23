@@ -65,6 +65,4 @@ echo -e "${CYAN}------------------------------------------------------------${NC
 
 # Paste above infomation but not the below informaiion
 # -------------------------------------------------------------------------------------------------------------------------------------------------
-# Then make executable
-
-/etc/update-motd.d/99-custom-motd
+# Then make executable /etc/update-motd.d/99-custom-motd
