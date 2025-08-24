@@ -2,66 +2,81 @@
 
 # Then paste
 
-#!/bin/bash
-# A beautiful and clever MOTD for Raj Patel's Debian 13 server.
-# This script uses ANSI escape codes for color and formatting.
+#!/usr/bin/env bash
+# A vibrant and informative MOTD for Raj Patel's server.
+# Automatically detects your OS (Debian, Ubuntu, etc.)—no hard-coding.
 
-# Define color variables for easier use
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[0;37m'
-NC='\033[0m' # No Color
+# ANSI color codes
+BOLD='\033[1m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+PURPLE='\033[1;35m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
 
-# The width of the box for the welcome message
-BOX_WIDTH=60
+# MOTD total width (characters)
+WIDTH=70
 
-# --- MOTD Header ---
-echo -e "${CYAN}------------------------------------------------------------${NC}"
-echo -e "${CYAN}|${NC}${WHITE}                                                            ${NC}${CYAN}|${NC}"
-echo -e "${CYAN}|${NC}${WHITE}  ${PURPLE}Welcome back to the command line, Raj Patel.${NC}          ${WHITE}   ${NC}${CYAN}|${NC}"
-echo -e "${CYAN}|${NC}${WHITE}  ${GREEN}The server is ready for your brilliance.${NC}               ${WHITE}   ${NC}${CYAN}|${NC}"
-echo -e "${CYAN}|${NC}${WHITE}                                                            ${NC}${CYAN}|${NC}"
-echo -e "${CYAN}------------------------------------------------------------${NC}"
-echo ""
+# Pull the human-friendly name of your OS
+OS_NAME=$(sed -n 's/^PRETTY_NAME=//p' /etc/os-release | tr -d '"')
 
-# --- System Information Section ---
-echo -e "${YELLOW}System Information:${NC}"
+# Draw a colored horizontal line of ‘=’
+print_line() {
+  printf "${PURPLE}%${WIDTH}s${NC}\n" "" | tr ' ' '='
+}
 
-# Hostname and OS
-HOSTNAME=$(hostnamectl | grep "Static hostname" | awk '{print $3}')
-OS_INFO=$(hostnamectl | grep "Operating System" | awk -F': ' '{print $2}')
-echo -e "  ${GREEN}Hostname:${NC}         $HOSTNAME"
-echo -e "  ${GREEN}OS:${NC}               $OS_INFO"
+echo
+print_line
 
-# Kernel
-KERNEL_VERSION=$(uname -r)
-echo -e "  ${GREEN}Kernel Version:${NC}   $KERNEL_VERSION"
+# Centered welcome header
+title1=" Welcome back, Raj Patel! "
+printf "${PURPLE}|${NC} ${BOLD}${CYAN}%s${NC}%*s${PURPLE}|${NC}\n" \
+  "$title1" $(( WIDTH - ${#title1} - 2 )) ""
+title2="Your ${OS_NAME} server is primed for action."
+printf "${PURPLE}|${NC} ${WHITE}%s${NC}%*s${PURPLE}|${NC}\n" \
+  "$title2" $(( WIDTH - ${#title2} - 2 )) ""
+print_line
+echo
 
-# Uptime
-UPTIME=$(uptime -p)
-echo -e "  ${GREEN}Uptime:${NC}           $UPTIME"
+## System Information
+echo -e "${YELLOW}System Information${NC}"
+echo -e "  ${GREEN}Hostname:${NC}        $(hostname)"
+echo -e "  ${GREEN}OS:${NC}              ${OS_NAME}"
+echo -e "  ${GREEN}Kernel:${NC}          $(uname -r)"
+echo -e "  ${GREEN}Uptime:${NC}          $(uptime -p)"
+echo -e "  ${GREEN}Users logged in:${NC} $(who | wc -l)"
+echo -e "  ${GREEN}Load average:${NC}    $(uptime | awk -F'load average: ' '{print $2}')"
+echo
 
-# IP Address
-IP_ADDRESS=$(hostname -I | awk '{print $1}')
-echo -e "  ${GREEN}IP Address:${NC}       $IP_ADDRESS"
+## Resource Usage
+echo -e "${YELLOW}Resource Usage${NC}"
+CPU_USAGE=$(top -bn1 | awk '/Cpu\(s\):/ {printf "%.1f%%", $2 + $4}')
+MEM_USAGE=$(free -h | awk '/^Mem:/ {print $3 " of " $2}')
+SWAP_USAGE=$(free -h | awk '/^Swap:/ {print $3 " of " $2}')
+DISK_USAGE=$(df -h / | awk 'NR==2 {print $5 " used"}')
+PROCS=$(ps ax --no-heading | wc -l)
 
-# Disk Usage
-DISK_USAGE=$(df -h / | tail -1 | awk '{print $5" used"}')
-echo -e "  ${GREEN}Disk Usage:${NC}       $DISK_USAGE"
+echo -e "  ${GREEN}CPU Usage:${NC}       ${CPU_USAGE}"
+echo -e "  ${GREEN}Memory Usage:${NC}    ${MEM_USAGE}"
+echo -e "  ${GREEN}Swap Usage:${NC}      ${SWAP_USAGE}"
+echo -e "  ${GREEN}Disk / Usage:${NC}     ${DISK_USAGE}"
+echo -e "  ${GREEN}Processes:${NC}       ${PROCS}"
+echo
 
-# Memory Usage
-MEM_USAGE=$(free -h | grep "Mem:" | awk '{print $3"/"$2}')
-echo -e "  ${GREEN}Memory Usage:${NC}     $MEM_USAGE"
-echo ""
+## Network Information
+echo -e "${YELLOW}Network Information${NC}"
+echo -e "  ${GREEN}IP Address:${NC}      $(hostname -I | awk '{print $1}')"
+echo -e "  ${GREEN}Default Gateway:${NC} $(ip route | awk '/default/ {print $3}')"
+echo
 
-# --- Footer ---
-echo -e "${CYAN}------------------------------------------------------------${NC}"
-echo -e "${YELLOW}  Use 'man' for help, 'sudo' for power, and 'exit' to leave.${NC}"
-echo -e "${CYAN}------------------------------------------------------------${NC}"
+## Footer
+print_line
+echo -e "${CYAN}  Use '${YELLOW}man${CYAN}' for help, '${YELLOW}sudo${CYAN}' for power, and '${YELLOW}exit${CYAN}' to leave.${NC}"
+print_line
+echo
 
 # Paste above infomation but not the below informaiion
 # -------------------------------------------------------------------------------------------------------------------------------------------------
