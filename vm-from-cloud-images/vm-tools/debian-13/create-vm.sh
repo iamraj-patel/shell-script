@@ -2,7 +2,7 @@
 
 # Configuration
 VM_NAME=$1
-BASE_IMG="/home/raj/Desktop/vm-tools/debian-13/debian-13.qcow2"
+BASE_IMG="/home/raj/Downloads/cloud-images/debian-13.qcow2"
 POOL_DIR="/var/lib/libvirt/images"
 TMP_DATA="/tmp/user-data-$VM_NAME"
 
@@ -84,7 +84,7 @@ sudo virt-install \
   --machine q35 \
   --disk path="$POOL_DIR/$VM_NAME.qcow2",format=qcow2 \
   --import \
-  --network network=default \
+  --network network=Private-Network \
   --cloud-init user-data="$TMP_DATA" \
   --graphics none \
   --noautoconsole
