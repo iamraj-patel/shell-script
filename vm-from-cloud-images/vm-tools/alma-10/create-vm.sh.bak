@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Configuration
+VM_NAME=$1
+BASE_IMG="$HOME/vm-tools/AlmaLinux-10.qcow2"
+POOL_DIR="/var/lib/libvirt/images"
+TMP_DATA="/tmp/user-data-$VM_NAME"
+
+if [ -z "$VM_NAME" ]; then
+    echo "Usage: ./create-vm.sh <vm-name>"
+    exit 1
+fi
+
+echo "🚀 Deploying $VM_NAME..."
+
+# 1. Create the dynamic Cloud-init config
+cat <<EOF > "$TMP_DATA"
+#cloud-config
+hostname: $VM_NAME
+fqdn: $VM_NAME.local
+
+# Package management
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+users:
+  - name: raj
+    groups: wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: "xxxxxxxxxx"
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
+
+growpart:
+  mode: auto
+  devices: ['/']
+
+runcmd:
+  - [ sh, -c, "echo 'alias c=clear' >> /home/raj/.bashrc" ]
+  - [ sh, -c, "echo 'alias cls=c' >> /home/raj/.bashrc" ]
+  - [ chown, "raj:raj", "/home/raj/.bashrc" ]
+EOF
+
+# 2. Create a Linked Clone (25GB)
+sudo qemu-img create -f qcow2 -b "$BASE_IMG" -F qcow2 "$POOL_DIR/$VM_NAME.qcow2" 25G
+
+# 3. Launch the VM
+sudo virt-install \
+  --name "$VM_NAME" \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant almalinux10 \
+  --disk path="$POOL_DIR/$VM_NAME.qcow2",format=qcow2 \
+  --import \
+  --network network=Private-Network \
+  --cloud-init user-data="$TMP_DATA" \
+  --noautoconsole \
+  --graphics none
+
+# 4. Cleanup temp file
+rm "$TMP_DATA"
+
+echo "✅ $VM_NAME is booting and performing a full system update."
+echo "Note: The first boot will take longer than usual while it updates."

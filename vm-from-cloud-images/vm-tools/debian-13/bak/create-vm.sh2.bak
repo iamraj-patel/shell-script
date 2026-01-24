@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Configuration
+VM_NAME=$1
+BASE_IMG="/home/raj/Desktop/vm-tools/debian-13/debian-13.qcow2"
+POOL_DIR="/var/lib/libvirt/images"
+TMP_DATA="/tmp/user-data-$VM_NAME"
+
+if [ -z "$VM_NAME" ]; then
+    echo "Usage: $0 <vm-name>"
+    exit 1
+fi
+
+# Ensure permissions for the Desktop path
+chmod +x /home/raj /home/raj/Desktop /home/raj/Desktop/vm-tools /home/raj/Desktop/vm-tools/debian-13 2>/dev/null
+
+echo "🚀 Deploying UEFI Debian 13 VM: $VM_NAME..."
+
+# 1. Recreate a clean Cloud-init config
+cat <<EOF > "$TMP_DATA"
+#cloud-config
+hostname: $VM_NAME
+ssh_pwauth: true
+
+# System updates
+package_update: true
+package_upgrade: true
+
+# Core packages
+packages:
+  - sudo
+  - curl
+  - qemu-guest-agent
+
+# User configuration
+users:
+  - name: raj
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: "YourSecurePasswordHere"
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+
+runcmd:
+  - [ sh, -c, "echo 'alias c=clear' >> /home/raj/.bashrc" ]
+  - [ sh, -c, "echo 'alias cls=c' >> /home/raj/.bashrc" ]
+  - [ chown, "raj:raj", "/home/raj/.bashrc" ]
+
+
+# Expand disk
+growpart:
+  mode: auto
+  devices: ['/']
+EOF
+
+# 2. Create the Linked Clone
+sudo qemu-img create -f qcow2 -b "$BASE_IMG" -F qcow2 "$POOL_DIR/$VM_NAME.qcow2" 25G
+
+# 3. Launch the VM with UEFI Firmware
+# --boot uefi: Tells libvirt to use OVMF firmware
+# --machine q35: A more modern chipset better suited for UEFI
+sudo virt-install \
+  --name "$VM_NAME" \
+  --memory 1024 \
+  --vcpus 1 \
+  --os-variant debian13 \
+  --boot uefi \
+  --machine q35 \
+  --disk path="$POOL_DIR/$VM_NAME.qcow2",format=qcow2 \
+  --import \
+  --network network=default \
+  --cloud-init user-data="$TMP_DATA" \
+  --graphics vnc,listen=0.0.0.0 \
+  --video virtio \
+  --console pty,target_type=serial \
+  --noautoconsole
+
+# Cleanup temp file
+rm "$TMP_DATA"
+
+echo "✅ $VM_NAME is booting in UEFI mode."
+echo "Wait 60s, then find the IP with: virsh domifaddr $VM_NAME"

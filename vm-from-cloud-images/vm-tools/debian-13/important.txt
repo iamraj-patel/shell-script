@@ -1,0 +1,2 @@
+In this folder normally you need to download cloud image witth .qcow2 file extension. Update the script with your proper username 
+and password.

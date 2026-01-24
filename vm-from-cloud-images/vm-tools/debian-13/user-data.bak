@@ -1,0 +1,32 @@
+#cloud-config
+datasource_list: [ NoCloud ]
+datasource:
+  NoCloud:
+    seedfrom: /var/lib/cloud/seed/nocloud/
+
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+
+users:
+  - name: raj
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: "YourSecurePasswordHere"
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
+
+growpart:
+  mode: auto
+  devices: ['/']
+
+runcmd:
+  - sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="console=ttyS0"/' /etc/default/grub
+  - update-grub
+  - systemctl enable --now qemu-guest-agent
+  - echo "alias c='clear'" >> /home/raj/.bashrc
+  - echo "alias cls='c'" >> /home/raj/.bashrc
+  - chown raj:raj /home/raj/.bashrc
