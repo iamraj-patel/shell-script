@@ -2,7 +2,6 @@
 
 # Configuration
 VM_NAME=$1
-# Updated path as per your request
 BASE_IMG="/home/raj/Downloads/cloud-images/AlmaLinux-10.qcow2"
 POOL_DIR="/var/lib/libvirt/images"
 TMP_DATA="/tmp/user-data-$VM_NAME"
@@ -12,27 +11,24 @@ if [ -z "$VM_NAME" ]; then
     exit 1
 fi
 
-# Ensure permissions for the Downloads path
 chmod +x /home/raj /home/raj/Downloads /home/raj/Downloads/cloud-images 2>/dev/null
 
 echo "🚀 Deploying UEFI AlmaLinux 10 VM: $VM_NAME..."
 
-# 1. Create the dynamic Cloud-init config
+# 1. Create the Cloud-init config
 cat <<EOF > "$TMP_DATA"
 #cloud-config
 hostname: $VM_NAME
 fqdn: $VM_NAME.local
 ssh_pwauth: true
 
-# Package management
 package_update: true
 package_upgrade: true
-package_reboot_if_required: true
 
-# Added bash-completion and qemu-guest-agent
 packages:
   - bash-completion
   - qemu-guest-agent
+  - firewalld
   - curl
   - vim
 
@@ -42,15 +38,10 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     lock_passwd: false
-    passwd: "YourSecurePasswordHere"
+    passwd: "Rajpatel1!"
     ssh_authorized_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
 
-growpart:
-  mode: auto
-  devices: ['/']
-
-# Using write_files for aliases (Most reliable for RHEL/Alma 10)
 write_files:
   - path: /etc/profile.d/custom_aliases.sh
     owner: root:root
@@ -60,16 +51,31 @@ write_files:
       alias cls='clear'
 
 runcmd:
-  # Ensure Guest Agent starts immediately
+  # 1. Start Guest Agent
   - systemctl enable --now qemu-guest-agent
-  # Fix SELinux labels for the new alias file
+  # 2. Firewall: Offline modifications
+  - firewall-offline-cmd --zone=public --add-service=ssh
+  - firewall-offline-cmd --zone=public --remove-service=cockpit
+  - firewall-offline-cmd --zone=public --remove-service=dhcpv6-client
+  - systemctl enable --now firewalld
+  # 3. Firewall: Live cleanup (Ensures Cockpit is stripped even if defaults re-added it)
+  - firewall-cmd --permanent --zone=public --remove-service=cockpit
+  - firewall-cmd --permanent --zone=public --remove-service=dhcpv6-client
+  - firewall-cmd --reload
+  # 4. System: Mask Cockpit so it can NEVER start
+  - systemctl stop cockpit.socket || true
+  - systemctl disable --now cockpit.socket || true
+  - systemctl mask cockpit.socket || true
+  - systemctl mask cockpit.service || true
+  # 5. Final Touches
+  - systemctl enable --now sshd
   - restorecon -v /etc/profile.d/custom_aliases.sh
 EOF
 
-# 2. Create a Linked Clone (25GB)
+# 2. Create Clone
 sudo qemu-img create -f qcow2 -b "$BASE_IMG" -F qcow2 "$POOL_DIR/$VM_NAME.qcow2" 25G
 
-# 3. Launch the VM with UEFI and Q35 chipset
+# 3. Launch VM
 sudo virt-install \
   --name "$VM_NAME" \
   --memory 2048 \
@@ -84,24 +90,27 @@ sudo virt-install \
   --graphics none \
   --noautoconsole
 
-# 4. Cleanup temp file
 rm "$TMP_DATA"
 
-echo "⏳ Waiting for $VM_NAME to initialize and Guest Agent to start..."
+echo "⏳ Waiting for VM Network and Config to finish..."
 
-# 5. IP Discovery Loop (Matches your Debian 13 script functionality)
+# 4. Discovery Loop
 while true; do
     IP=$(sudo virsh domifaddr "$VM_NAME" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
+    
     if [ ! -z "$IP" ]; then
-        # Check if Guest Agent is responding before declaring success
-        if sudo virsh guestinfo "$VM_NAME" >/dev/null 2>&1; then
-            echo -e "\n✅ $VM_NAME is Ready!"
-            echo "IP Address: $IP"
-            echo "Guest Agent: Connected"
-            echo "SSH: ssh raj@$IP"
+        if nc -z -w 2 "$IP" 22 2>/dev/null; then
+            echo -e "\n\n✅ $VM_NAME is FULLY configured!"
+            echo "-------------------------------------------"
+            echo "IP Address : $IP"
+            echo "Firewall   : Active (SSH Only)"
+            echo "Cockpit    : Removed from Firewall & Masked"
+            echo "SSH Command: ssh raj@$IP"
+            echo "-------------------------------------------"
             break
         fi
     fi
+    
     printf "."
-    sleep 5
+    sleep 3
 done
