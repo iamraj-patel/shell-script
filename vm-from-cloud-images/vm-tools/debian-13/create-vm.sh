@@ -77,8 +77,8 @@ sudo qemu-img create -f qcow2 -b "$BASE_IMG" -F qcow2 "$POOL_DIR/$VM_NAME.qcow2"
 # 3. Launch the VM
 sudo virt-install \
   --name "$VM_NAME" \
-  --memory 2048 \
-  --vcpus 2 \
+  --memory 1024 \
+  --vcpus 1 \
   --os-variant debian13 \
   --boot uefi \
   --machine q35 \
