@@ -42,15 +42,6 @@ users:
     ssh_authorized_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
 
-  - name: ansible
-    groups: sudo
-    shell: /bin/bash
-    lock_passwd: false
-    passwd: "YourSecurePasswordHere"
-    ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIl8FP8+zqdP/7A11l9XkUjdZrXXTTX2swfSyrBUAkJs raj@ansible
-    sudo: ALL=(ALL) NOPASSWD:ALL
-
 write_files:
   - path: /etc/profile.d/custom_aliases.sh
     owner: root:root
