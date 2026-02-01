@@ -43,7 +43,7 @@ users:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAGbAwADv9elOFsGLEXIhitUJrSaHyiPl5byE75+SSMN Test-Computer
 
   - name: ansible
-    groups: sudo
+    groups: wheel
     shell: /bin/bash
     lock_passwd: false
     passwd: "YourSecurePasswordHere"
