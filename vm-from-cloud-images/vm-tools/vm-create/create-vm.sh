@@ -106,7 +106,6 @@ packages:
   - locales-all
   - vim
   - net-tools
-  - fastfetch
 
 users:
   - name: raj
