@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+
+# Custom Dynamic MOTD for Raj Patel's Debian/Ubuntu servers
+# Location: /etc/update-motd.d/99-custom-motd
+# Purpose: Display useful system, patch, security, and resource information at login.
+
+# ANSI color codes
+BOLD='\033[1m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+PURPLE='\033[1;35m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
+
+# MOTD total width
+WIDTH=74
+
+# Helper function to safely return a fallback value
+safe_value() {
+  local value="$1"
+  local fallback="$2"
+
+  if [ -z "$value" ]; then
+    echo "$fallback"
+  else
+    echo "$value"
+  fi
+}
+
+# Print colored horizontal line
+print_line() {
+  printf "${PURPLE}%${WIDTH}s${NC}\n" "" | tr ' ' '='
+}
+
+# Get OS information
+OS_NAME=$(sed -n 's/^PRETTY_NAME=//p' /etc/os-release 2>/dev/null | tr -d '"')
+OS_NAME=$(safe_value "$OS_NAME" "Unknown Linux")
+
+# Current session user
+CURRENT_USER=$(whoami 2>/dev/null)
+CURRENT_USER=$(safe_value "$CURRENT_USER" "Unknown")
+
+# Header section
+echo
+print_line
+
+title1=" Welcome back, ${CURRENT_USER}! "
+printf "${PURPLE}|${NC} ${BOLD}${CYAN}%s${NC}%*s${PURPLE}|${NC}\n" \
+  "$title1" $(( WIDTH - ${#title1} - 2 )) ""
+
+title2=" ${OS_NAME} server is ready for administration. "
+printf "${PURPLE}|${NC} ${WHITE}%s${NC}%*s${PURPLE}|${NC}\n" \
+  "$title2" $(( WIDTH - ${#title2} - 2 )) ""
+
+print_line
+echo
+
+# System overview
+HOSTNAME=$(hostname 2>/dev/null)
+KERNEL=$(uname -r 2>/dev/null)
+UPTIME=$(uptime -p 2>/dev/null)
+USERS_LOGGED_IN=$(who 2>/dev/null | wc -l)
+LOAD_AVG=$(uptime 2>/dev/null | awk -F'load average: ' '{print $2}')
+CPU_CORES=$(nproc 2>/dev/null)
+ARCH=$(uname -m 2>/dev/null)
+BOOT_TIME=$(who -b 2>/dev/null | awk '{$1=""; print $0}' | sed 's/^ *//')
+
+HOSTNAME=$(safe_value "$HOSTNAME" "Unknown")
+KERNEL=$(safe_value "$KERNEL" "Unknown")
+UPTIME=$(safe_value "$UPTIME" "Unknown")
+USERS_LOGGED_IN=$(safe_value "$USERS_LOGGED_IN" "Unknown")
+LOAD_AVG=$(safe_value "$LOAD_AVG" "Unknown")
+CPU_CORES=$(safe_value "$CPU_CORES" "Unknown")
+ARCH=$(safe_value "$ARCH" "Unknown")
+BOOT_TIME=$(safe_value "$BOOT_TIME" "Unknown")
+
+echo -e "${BOLD}${YELLOW}System Overview${NC}"
+echo -e "  ${GREEN}Hostname:${NC}          ${HOSTNAME}"
+echo -e "  ${GREEN}OS:${NC}                ${OS_NAME}"
+echo -e "  ${GREEN}Kernel:${NC}            ${KERNEL}"
+echo -e "  ${GREEN}Architecture:${NC}      ${ARCH}"
+echo -e "  ${GREEN}Uptime:${NC}            ${UPTIME}"
+echo -e "  ${GREEN}Boot Time:${NC}         ${BOOT_TIME}"
+echo -e "  ${GREEN}CPU Cores:${NC}         ${CPU_CORES}"
+echo -e "  ${GREEN}Users Logged In:${NC}   ${USERS_LOGGED_IN}"
+echo -e "  ${GREEN}Load Average:${NC}      ${LOAD_AVG}"
+echo
+
+# Resource usage
+CPU_USAGE=$(top -bn1 2>/dev/null | awk '/Cpu\(s\):/ {printf "%.1f%%", $2 + $4}')
+MEM_USAGE=$(free -h 2>/dev/null | awk '/^Mem:/ {print $3 " used of " $2}')
+MEM_PCT=$(free 2>/dev/null | awk '/^Mem:/ {printf "%.0f", ($3/$2)*100}')
+SWAP_USAGE=$(free -h 2>/dev/null | awk '/^Swap:/ {print $3 " used of " $2}')
+DISK_USAGE=$(df -h / 2>/dev/null | awk 'NR==2 {print $5 " used of " $2}')
+DISK_PCT=$(df / 2>/dev/null | awk 'NR==2 {gsub("%","",$5); print $5}')
+PROCS=$(ps ax --no-heading 2>/dev/null | wc -l)
+
+CPU_USAGE=$(safe_value "$CPU_USAGE" "Unknown")
+MEM_USAGE=$(safe_value "$MEM_USAGE" "Unknown")
+MEM_PCT=$(safe_value "$MEM_PCT" "0")
+SWAP_USAGE=$(safe_value "$SWAP_USAGE" "Unknown")
+DISK_USAGE=$(safe_value "$DISK_USAGE" "Unknown")
+PROCS=$(safe_value "$PROCS" "Unknown")
+
+DISK_COLOR=$GREEN
+if [[ "$DISK_PCT" =~ ^[0-9]+$ ]]; then
+  if [ "$DISK_PCT" -ge 90 ]; then
+    DISK_COLOR=$RED
+  elif [ "$DISK_PCT" -ge 80 ]; then
+    DISK_COLOR=$YELLOW
+  fi
+fi
+
+MEM_COLOR=$GREEN
+if [[ "$MEM_PCT" =~ ^[0-9]+$ ]]; then
+  if [ "$MEM_PCT" -ge 90 ]; then
+    MEM_COLOR=$RED
+  elif [ "$MEM_PCT" -ge 80 ]; then
+    MEM_COLOR=$YELLOW
+  fi
+fi
+
+echo -e "${BOLD}${YELLOW}Resource Usage${NC}"
+echo -e "  ${GREEN}CPU Usage:${NC}         ${CPU_USAGE}"
+echo -e "  ${GREEN}Memory Usage:${NC}      ${MEM_COLOR}${MEM_USAGE}${NC}"
+echo -e "  ${GREEN}Swap Usage:${NC}        ${SWAP_USAGE}"
+echo -e "  ${GREEN}Disk / Usage:${NC}      ${DISK_COLOR}${DISK_USAGE}${NC}"
+echo -e "  ${GREEN}Processes:${NC}         ${PROCS}"
+echo
+
+# Network information
+IP_ADDRESS=$(hostname -I 2>/dev/null | awk '{print $1}')
+GATEWAY=$(ip route 2>/dev/null | awk '/default/ {print $3; exit}')
+INTERFACE=$(ip route 2>/dev/null | awk '/default/ {print $5; exit}')
+DNS_SERVERS=$(grep -E '^nameserver' /etc/resolv.conf 2>/dev/null | awk '{print $2}' | paste -sd ', ' -)
+
+IP_ADDRESS=$(safe_value "$IP_ADDRESS" "Unavailable")
+GATEWAY=$(safe_value "$GATEWAY" "Unavailable")
+INTERFACE=$(safe_value "$INTERFACE" "Unavailable")
+DNS_SERVERS=$(safe_value "$DNS_SERVERS" "Unavailable")
+
+echo -e "${BOLD}${YELLOW}Network Information${NC}"
+echo -e "  ${GREEN}Primary IP:${NC}        ${IP_ADDRESS}"
+echo -e "  ${GREEN}Default Gateway:${NC}   ${GATEWAY}"
+echo -e "  ${GREEN}Default Interface:${NC} ${INTERFACE}"
+echo -e "  ${GREEN}DNS Servers:${NC}       ${DNS_SERVERS}"
+echo
+
+# Patch status
+UPDATES="Unknown"
+SECURITY_UPDATES="Unknown"
+
+if command -v apt >/dev/null 2>&1; then
+  UPDATES=$(apt list --upgradable 2>/dev/null | tail -n +2 | wc -l)
+  if command -v unattended-upgrade >/dev/null 2>&1; then
+    SECURITY_UPDATES=$(apt list --upgradable 2>/dev/null | grep -i security | wc -l)
+  else
+    SECURITY_UPDATES=$(apt list --upgradable 2>/dev/null | grep -i security | wc -l)
+  fi
+fi
+
+if [ -f /var/run/reboot-required ]; then
+  REBOOT_STATUS="${RED}YES - reboot required${NC}"
+else
+  REBOOT_STATUS="${GREEN}NO${NC}"
+fi
+
+echo -e "${BOLD}${YELLOW}Patch Status${NC}"
+echo -e "  ${GREEN}Package Updates:${NC}   ${UPDATES} available"
+echo -e "  ${GREEN}Security Updates:${NC}  ${SECURITY_UPDATES} available"
+echo -e "  ${GREEN}Reboot Required:${NC}   ${REBOOT_STATUS}"
+echo -e "  ${GREEN}Update Command:${NC}    ${CYAN}sudo apt update && sudo apt upgrade${NC}"
+echo
+
+# Login and security information
+LAST_LOGIN=$(last -n 2 "$CURRENT_USER" 2>/dev/null | head -n 1)
+FAILED_LOGIN_COUNT="Unavailable"
+SSH_CONNECTIONS="Unavailable"
+SUDO_USERS="Unavailable"
+FAILED_SERVICES="Unavailable"
+
+if command -v lastb >/dev/null 2>&1; then
+  FAILED_LOGIN_COUNT=$(lastb 2>/dev/null | grep -v "btmp begins" | wc -l)
+fi
+
+if command -v ss >/dev/null 2>&1; then
+  SSH_CONNECTIONS=$(ss -tn 2>/dev/null | awk '$4 ~ /:22$/ || $4 ~ /:ssh$/ {count++} END {print count+0}')
+fi
+
+if getent group sudo >/dev/null 2>&1; then
+  SUDO_USERS=$(getent group sudo | awk -F: '{print $4}')
+  SUDO_USERS=$(safe_value "$SUDO_USERS" "None listed")
+elif getent group wheel >/dev/null 2>&1; then
+  SUDO_USERS=$(getent group wheel | awk -F: '{print $4}')
+  SUDO_USERS=$(safe_value "$SUDO_USERS" "None listed")
+fi
+
+if command -v systemctl >/dev/null 2>&1; then
+  FAILED_SERVICES=$(systemctl --failed --no-legend --no-pager 2>/dev/null | wc -l)
+fi
+
+LAST_LOGIN=$(safe_value "$LAST_LOGIN" "Unavailable")
+FAILED_LOGIN_COUNT=$(safe_value "$FAILED_LOGIN_COUNT" "Unavailable")
+SSH_CONNECTIONS=$(safe_value "$SSH_CONNECTIONS" "Unavailable")
+FAILED_SERVICES=$(safe_value "$FAILED_SERVICES" "Unavailable")
+
+echo -e "${BOLD}${YELLOW}Login & Security${NC}"
+echo -e "  ${GREEN}Current User:${NC}      ${CURRENT_USER}"
+echo -e "  ${GREEN}Last Login:${NC}        ${LAST_LOGIN}"
+echo -e "  ${GREEN}Failed Logins:${NC}     ${FAILED_LOGIN_COUNT}"
+echo -e "  ${GREEN}SSH Connections:${NC}   ${SSH_CONNECTIONS}"
+echo -e "  ${GREEN}Sudo Users:${NC}        ${SUDO_USERS}"
+echo -e "  ${GREEN}Failed Services:${NC}   ${FAILED_SERVICES}"
+echo
+
+# Top processes
+TOP_CPU_PROCESS=$(ps -eo comm,%cpu --sort=-%cpu 2>/dev/null | awk 'NR==2 {print $1 " - " $2 "%"}')
+TOP_MEM_PROCESS=$(ps -eo comm,%mem --sort=-%mem 2>/dev/null | awk 'NR==2 {print $1 " - " $2 "%"}')
+
+TOP_CPU_PROCESS=$(safe_value "$TOP_CPU_PROCESS" "Unavailable")
+TOP_MEM_PROCESS=$(safe_value "$TOP_MEM_PROCESS" "Unavailable")
+
+echo -e "${BOLD}${YELLOW}Top Processes${NC}"
+echo -e "  ${GREEN}Top CPU Process:${NC}   ${TOP_CPU_PROCESS}"
+echo -e "  ${GREEN}Top Memory Process:${NC} ${TOP_MEM_PROCESS}"
+echo
+
+# Admin tips
+TIPS=(
+"Use '${CYAN}tmux${NC}' or '${CYAN}screen${NC}' to keep sessions alive."
+"Press '${CYAN}Ctrl+R${NC}' to search command history."
+"Use '${CYAN}htop${NC}' for a better process view."
+"Run '${CYAN}du -sh *${NC}' to check directory sizes."
+"Use '${CYAN}grep -r <text> .${NC}' to search text recursively."
+"Run '${CYAN}journalctl -xe${NC}' to investigate recent system issues."
+"Use '${CYAN}df -h${NC}' to quickly check disk space."
+"Use '${CYAN}systemctl --failed${NC}' to check failed services."
+"Run '${CYAN}sudo apt update${NC}' before checking package upgrades."
+)
+
+TIP_OF_THE_DAY=${TIPS[$(( RANDOM % ${#TIPS[@]} ))]}
+
+print_line
+echo -e "${BOLD}${CYAN}  Tip of the Day:${NC} ${TIP_OF_THE_DAY}"
+echo -e "${CYAN}  Reminder: Use '${YELLOW}man${CYAN}' for help, '${YELLOW}sudo${CYAN}' carefully, and '${YELLOW}exit${CYAN}' when done.${NC}"
+print_line
+echo
