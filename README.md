@@ -1,480 +1,246 @@
-<div align="center">
+# 🚀 Shell Scripts
 
-# 🚀 Infrastructure Automation Shell Scripts
+A collection of Bash scripts, automation utilities, and configuration resources for:
 
-### Linux • Kubernetes • Server Onboarding • SSL Management • Cloud VM Tooling
-
-Automating repetitive infrastructure tasks through Bash scripting and operational automation.
-
-<br>
-
-![Shell](https://img.shields.io/badge/Shell-Bash-4EAA25?style=for-the-badge&logo=gnubash&logote
-![Linux](https://img.shields.io/badge/Platform-Linux-FCC624?style=for-the-badge&logo=linux&logock
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Utilities-326CE5?style=for-the-badge&logo=kuberneteste
-![Automation](https://img.shields.io/badge/Focus-Automation-orange?style=for-theub last commit](https://img.shields.io/github/last-commit/ipt?style=flat-square
-![GitHub stars](https://img.shields.io/github/stars/iamraj-patel/shell-script?styleitHub forks](https://img.shields.io/github/forks/iamraj-patel/shellat-square
-
-</div>
+- 🐧 Linux Administration
+- ☸️ Kubernetes Operations
+- 🔧 Server Onboarding
+- 🔐 SSL Certificate Management
+- ☁️ Cloud Image Virtual Machines
+- 📢 Dynamic MOTD Configuration
 
 ---
 
-# 📖 About
+## 📖 About
 
-This repository contains a growing collection of Bash scripts, automation utilities, and Linux administration tools used to simplify infrastructure operations and standardize system management tasks.
+This repository contains infrastructure-focused shell scripts used to automate common operational and administrative tasks.
 
-The primary objectives are:
+The goals of this repository are:
 
-✅ Reduce manual effort
-
-✅ Standardize deployments
-
-✅ Improve operational consistency
-
-✅ Accelerate troubleshooting
-
-✅ Automate common infrastructure workflows
-
-✅ Improve system reliability
-
-✅ Build reusable operational tooling
+- Reduce manual effort
+- Standardize deployments
+- Improve operational consistency
+- Accelerate troubleshooting
+- Promote reusable automation
+- Simplify infrastructure management
 
 ---
 
-# 📑 Table of Contents
-
-- #-repository-structure
-- [-automation-categories
-- [Example Automation Workfloww
-- [Repositoryy-focus
-- [Requirementss
-- #-getting-started
-- [Recommended Validationn-workflow
-- [Security Guidance](#-security-guidance)
-ments
-- [-contributing
-- [Roadmapp
-- #-author
-
----
-
-# 🗂 Repository Structure
+## 📂 Repository Structure
 
 ```text
 shell-script/
-│
 ├── kubernetes/
-│   └── Kubernetes administration utilities
-│
-├── server-onboarding/
-│   └── Linux server onboarding automation
-│
 ├── motd-message/
-│   └── Dynamic MOTD configuration
-│
+├── server-onboarding/
 ├── vm-from-cloud-images/
 │   └── vm-tools/
-│       └── VM preparation utilities
-│
 ├── copy-ssl-from-remote.sh
-│   └── SSL certificate transfer utility
-│
 └── README.md
 ```
 
 ---
 
-# ⚙️ Automation Categories
+## ☸️ Kubernetes
 
-## ☸️ Kubernetes Utilities
+Scripts and supporting resources related to Kubernetes administration.
 
-Tools and scripts designed for Kubernetes administration and operational validation.
+Typical use cases:
 
-### Use Cases
-
-- Kubernetes host preparation
+- Host preparation
 - Cluster validation
-- Node health checks
-- Runtime verification
-- Troubleshooting assistance
+- Health checks
+- Runtime validation
+- Troubleshooting
 - Operational automation
-- Configuration validation
-
-### Benefits
-
-- Faster troubleshooting
-- Standardized validation
-- Consistent deployments
-- Reduced configuration errors
 
 ---
 
 ## 🖥️ Server Onboarding
 
-Automation used after deploying a new Linux server.
+Scripts used to prepare newly deployed Linux servers.
 
-### Typical Tasks
+Tasks may include:
 
-- System updates
 - Package installation
+- System updates
 - User creation
 - SSH configuration
+- Security configuration
 - Environment preparation
-- Security baseline configuration
-- Administrative tooling installation
-
-### Benefits
-
-- Faster deployment
-- Consistent server builds
-- Reduced manual work
-- Improved operational standards
 
 ---
 
-## 📢 MOTD Management
+## 📢 MOTD Configuration
 
 Dynamic Message of the Day configurations for Linux systems.
 
-### Information Displayed
+Typical information displayed:
 
 - Hostname
 - Operating System
 - Uptime
 - CPU Information
 - Memory Usage
-- Disk Utilization
+- Disk Usage
 - Network Information
-- Administrative Notices
-
-### Benefits
-
-- Quick server visibility
-- Consistent login experience
-- Easier troubleshooting
-- Environment identification
 
 ---
 
 ## 🔐 SSL Certificate Management
 
-Automation for certificate migration and remote certificate retrieval.
+Utilities used to simplify SSL certificate migration and transfer.
 
-### Features
+Features:
 
-- Remote certificate copying
-- Certificate migration
-- SSL backup workflows
-- Reduced manual transfer effort
-
-### Recommended Checks
-
-- Verify certificate permissions
-- Confirm file ownership
-- Validate certificate chain
-- Check expiration dates
+- Copy certificates from remote systems
+- Backup certificate files
+- Certificate migration workflows
+- Validation and verification tasks
 
 ---
 
-## ☁️ Cloud Image VM Tools
+## ☁️ Cloud VM Tools
 
-Utilities for preparing virtual machines built from cloud images.
+Resources for preparing virtual machines deployed from cloud images.
 
-### Common Tasks
+Common tasks:
 
-- Initial VM preparation
-- Post-deployment configuration
+- Initial VM configuration
+- Guest tool preparation
 - Environment standardization
-- Guest tooling setup
-- Operational readiness checks
-
-### Benefits
-
-- Faster VM provisioning
-- Consistent VM configuration
-- Improved deployment repeatability
+- Post-deployment configuration
 
 ---
 
-# 🏗 Example Automation Workflow
+## 🏗️ Typical Workflow
 
 ```text
-┌──────────────────────────┐
-│  🚀 Deploy Linux Server  │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ ⚙️ Run Onboarding Script │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ 📦 Install Packages      │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ 👤 Configure Users & SSH │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ 🔒 Apply Security Config │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ 📢 Configure MOTD        │
-└────────────┬─────────────┘
-             │
-             ▼
-┌──────────────────────────┐
-│ ✅ Production Ready      │
-└──────────────────────────┘
+Deploy Server
+     │
+     ▼
+Run Onboarding Script
+     │
+     ▼
+Install Required Packages
+     │
+     ▼
+Configure Users & SSH
+     │
+     ▼
+Apply Security Settings
+     │
+     ▼
+Configure MOTD
+     │
+     ▼
+Production Ready
 ```
 
 ---
 
-# 📊 Repository Focus
+## ✅ Recommended Validation Process
 
-| Technology | Focus |
-|------------|--------|
-| Linux Administration | ✅ |
-| Infrastructure Automation | ✅ |
-| Kubernetes | ✅ |
-| Security | ✅ |
-| VMware | ✅ |
-| Cloud Images | ✅ |
-| Bash Scripting | ✅ |
-| Server Standardization | ✅ |
+Before running any script:
 
----
-
-# 🧰 Requirements
-
-## Supported Distributions
-
-| Distribution | Supported |
-|-------------|-----------|
-| Ubuntu | ✅ |
-| Debian | ✅ |
-| Fedora | ✅ |
-| Rocky Linux | ✅ |
-| AlmaLinux | ✅ |
-
-## General Requirements
-
-- Bash
-- Linux operating system
-- Standard GNU utilities
-- sudo privileges (when required)
-- Network connectivity
-- SSH client tools
-
-For Kubernetes-specific scripts:
-
-- kubectl
-- kubeadm
-- kubelet
-- Container runtime
-
----
-
-# 🚀 Getting Started
-
-## Clone Repository
-
-```bash
-git clone https://github.com/iamraj-patel/shell-script.git
-cd shell-script
-```
-
-## Review Scripts
-
-```bash
-find . -type f
-```
-
-## Validate Bash Syntax
+1. Review the source code.
+2. Validate syntax.
 
 ```bash
 bash -n script.sh
 ```
 
-## Run ShellCheck
+3. Run ShellCheck.
 
 ```bash
 shellcheck script.sh
 ```
 
-## Grant Execute Permission
-
-```bash
-chmod +x script.sh
-```
-
-## Execute Script
-
-```bash
-./script.sh
-```
-
-or
-
-```bash
-sudo ./script.sh
-```
-
----
-
-# ✅ Recommended Validation Workflow
-
-```text
-┌─────────────┐
-│ 🔍 Inspect  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ 📝 bash -n  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ 🧹 ShellCheck │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ 🧪 Test VM  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ 💾 Backup   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ ▶️ Execute  │
-└──────┬──────┘
-       │
-       ▼
-┌────────────────────────┐
-│ ✅ Validate Results    │
-│ ✅ Check Idempotency   │
-└────────────────────────┘
-```
-
-### Recommended Process
-
-1. Review script contents.
-2. Validate syntax with `bash -n`.
-3. Run ShellCheck.
 4. Test in a lab environment.
-5. Back up configuration.
-6. Execute script.
-7. Validate results.
-8. Confirm idempotency.
-9. Document findings.
+5. Back up existing configuration.
+6. Execute the script.
+7. Validate the results.
+8. Verify idempotency.
 
 ---
 
-# 🔒 Security Guidance
+## 🧰 Requirements
 
-## Never
+Common requirements include:
 
-❌ Commit secrets
+- Linux Operating System
+- Bash
+- Standard GNU/Linux utilities
+- Network connectivity
+- sudo privileges (where required)
 
-❌ Commit private keys
+Kubernetes scripts may additionally require:
 
-❌ Commit kubeconfig files
-
-❌ Store credentials in scripts
-
-❌ Expose tokens in logs
-
-## Always
-
-✅ Review scripts before execution
-
-✅ Follow least privilege principles
-
-✅ Back up configurations
-
-✅ Verify permissions
-
-✅ Validate certificates
-
-✅ Test in non-production environments
-
-✅ Document infrastructure changes
+- kubectl
+- kubeadm
+- kubelet
+- Compatible container runtime
 
 ---
 
-# 🌍 Supported Environments
+## 🔒 Security Best Practices
 
-The repository primarily targets Linux environments including:
+- Never commit secrets
+- Never commit private keys
+- Never commit kubeconfig files
+- Review scripts before execution
+- Follow least privilege principles
+- Back up configurations before modification
+- Test changes in non-production environments
+
+---
+
+## 🌍 Supported Platforms
+
+The repository primarily targets:
 
 - Ubuntu
 - Debian
 - Fedora
 - Rocky Linux
 - AlmaLinux
-- Cloud-based Linux images
-- Virtualized Linux workloads
+- Cloud-hosted Linux systems
 
-Compatibility depends on the individual script and should always be validated before production use.
+Compatibility varies by script.
 
 ---
 
-# 🤝 Contributing
+## 🤝 Contributing
 
-Contributions, suggestions, and improvements are welcome.
+Contributions and improvements are welcome.
 
-## Example Workflow
+Example workflow:
 
 ```bash
-git checkout -b feature/new-improvement
-
+git checkout -b feature/my-change
 git add .
-
-git commit -m "Add improvement"
-
-git push origin feature/new-improvement
+git commit -m "Describe change"
+git push origin feature/my-change
 ```
 
-### Contribution Guidelines
+---
 
-- Test your changes
-- Follow Bash best practices
-- Add comments where appropriate
-- Keep code readable
-- Update documentation
-- Avoid committing secrets
+## 🗺️ Roadmap
+
+- Kubernetes health reporting
+- SSL expiration monitoring
+- Server inventory reporting
+- GitHub Actions validation
+- Enhanced logging
+- Additional Linux distribution support
 
 ---
 
-# 🗺 Roadmap
+## 👨‍💻 Author
 
-- [ ] Health-check automation
-- [ ] Server inventory reporting
-- [ ] SSL expiration monitoring
-- [ ] Kubernetes reporting tools
-- [ ] ShellCheck GitHub Actions
-- [ ] Automated testing
-- [ ] Standardized logging
-- [ ] Improved error handling
-- [ ] Release versioning
-- [ ] Additional Linux distribution support
+**Raj Patel**
 
----
-
-# 👨‍💻 Author
-
-## Raj Patel
-
-**Infrastructure Managed Services Senior Analyst**
+Infrastructure Managed Services Senior Analyst
 
 Linux • Windows Server • VMware • Kubernetes • Automation
 
@@ -482,10 +248,4 @@ GitHub: https://github.com/iamraj-patel
 
 ---
 
-<div align="center">
-
-### ⭐ If you find these scripts useful, consider starring the repository.
-
-**Building better infrastructure through automation.**
-
-</div>
+⭐ If you find these scripts useful, consider starring the repository.
